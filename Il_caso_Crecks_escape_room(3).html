@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il caso Crecks — Escape Room</title>
+<style>
+:root{--bg:#080b12;--panel:#111827;--panel2:#182235;--ink:#edf2f7;--muted:#a8b3c5;--gold:#d8b56a;--red:#b84b55;--green:#65c18c}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top,#17233a 0,#080b12 48%,#05070b 100%);color:var(--ink);font-family:Georgia,serif;min-height:100vh}
+.wrap{max-width:900px;margin:auto;padding:28px 18px 50px}.card{background:rgba(17,24,39,.94);border:1px solid #2b3952;border-radius:18px;box-shadow:0 20px 60px #0008;padding:28px;margin:18px 0}
+h1,h2{margin-top:0} h1{font-size:clamp(2.2rem,6vw,4.5rem);letter-spacing:.04em;text-align:center;color:var(--gold);text-shadow:0 2px 20px #d8b56a33}
+h2{color:var(--gold)} p{line-height:1.65}.subtitle{text-align:center;color:var(--muted);font-style:italic}
+button{background:var(--gold);color:#101318;border:0;padding:13px 20px;border-radius:10px;font-weight:700;cursor:pointer;margin:5px}button:hover{filter:brightness(1.1)}
+input,select{background:#0a0f18;border:1px solid #394963;color:white;border-radius:8px;padding:11px;font-size:1rem;width:100%;margin:7px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.clue{background:#0c1320;border:1px solid #2d3a50;border-radius:12px;padding:16px}.secret{letter-spacing:.22em;color:var(--gold);font-size:1.3rem}
+.hidden{display:none}.success{border-color:#3e8760;background:#10251b}.error{border-color:#7f3940;background:#261216}.note{color:var(--muted);font-size:.92rem}.stamp{display:inline-block;border:1px solid var(--gold);padding:5px 9px;border-radius:5px;color:var(--gold);font-size:.75rem;letter-spacing:.12em}
+.avatar{width:170px;height:190px;margin:10px auto 18px;position:relative}.head{position:absolute;width:118px;height:128px;background:#f4c9a9;border-radius:48% 48% 46% 46%;left:26px;top:28px;z-index:2}.hair{position:absolute;width:145px;height:125px;background:#5b3525;border-radius:50% 50% 42% 45%;left:12px;top:10px;z-index:3}.hair:after{content:"";position:absolute;width:32px;height:75px;background:#5b3525;right:-8px;top:54px;border-radius:50%}.face{position:absolute;z-index:5;left:43px;top:70px;width:80px;height:45px}.eye{position:absolute;width:9px;height:13px;background:#24202a;border-radius:50%;top:0}.eye.a{left:8px}.eye.b{right:8px}.smile{position:absolute;left:25px;top:18px;width:30px;height:14px;border-bottom:4px solid #8c3940;border-radius:50%}.body{position:absolute;left:30px;top:137px;width:110px;height:53px;background:#6b79a8;border-radius:40px 40px 10px 10px;z-index:1}.bow{position:absolute;z-index:6;left:122px;top:25px;color:#d8b56a;font-size:40px;transform:rotate(18deg)}
+.lock{font-family:monospace;background:#070a10;border:1px solid #303b4e;padding:15px;border-radius:10px;color:#9ee0ba;white-space:pre-wrap}
+.final{border:2px solid var(--gold);background:linear-gradient(135deg,#211b0d,#15120b);padding:30px;border-radius:16px}
+.final p{font-size:1.15rem}.bigq{font-size:clamp(1.5rem,4vw,2.5rem);color:var(--gold);font-weight:bold;text-align:center;line-height:1.35}
+.progress{height:8px;background:#202b3d;border-radius:8px;overflow:hidden}.bar{height:100%;background:var(--gold);width:0%;transition:.4s}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section id="intro" class="card">
+  <div class="stamp">FASCICOLO RISERVATO · 2026</div>
+  <h1>IL CASO CRECKS</h1>
+  <p class="subtitle">Un'indagine digitale per due persone molto speciali.</p>
+  <div class="avatar"><div class="hair"></div><div class="head"></div><div class="face"><i class="eye a"></i><i class="eye b"></i><i class="smile"></i></div><div class="body"></div><div class="bow">★</div></div>
+  <p style="text-align:center">Agenti <b>Zia Giada</b> e <b>Zio Pietro</b>, siete stati convocati da una fonte molto particolare.</p>
+  <p>La fonte si chiama <b>Isabel</b>: bellissima, irresistibile e — secondo i documenti — <em>piuttosto discola</em>. Ha lasciato una serie di prove. Risolverle tutte vi porterà a scoprire un luogo misterioso e, soprattutto, il vero motivo dell'indagine.</p>
+  <button onclick="start()">INIZIA L'INDAGINE</button>
+</section>
+
+<div id="game" class="hidden">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:15px;align-items:center"><span class="stamp">IL CASO CRECKS</span><span id="counter">0 / 6</span></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <section class="card" id="s1">
+    <h2>Fascicolo 01 — La firma della sospetta</h2>
+    <p>Isabel ha nascosto il primo codice dentro una frase. Dice:</p>
+    <div class="clue"><b>“Crecks non è un semplice soprannome. È una chiave. Prendete le iniziali di queste parole: <br><br>
+    <span class="secret">C</span>ertamente <span class="secret">R</span>icordate <span class="secret">E</span>splorate <span class="secret">C</span>on <span class="secret">K</span>ura <span class="secret">S</span>toria.</b></div>
+    <p>Qual è la parola-chiave?</p>
+    <input id="a1" placeholder="Scrivi la parola">
+    <button onclick="check(1,['CRECKS'])">CONFERMA</button><div id="m1"></div>
+  </section>
+
+  <section class="card hidden" id="s2">
+    <h2>Fascicolo 02 — La data impossibile</h2>
+    <p>Nel diario di Isabel compare questa sequenza:</p>
+    <div class="lock">30 — 07 — 2026
+A = 1   B = 2   C = 3 ... Z = 26
+
+30 non può essere una lettera.
+07 non può essere una lettera.
+2026 nasconde ciò che dovete cercare.</div>
+    <p>Il messaggio continua: <b>“Cercate la data che ha cambiato tutto. Non trasformate i numeri in lettere: trasformate la data in un ricordo.”</b></p>
+    <p>Inserite la data completa che Isabel vuole farvi ricordare.</p>
+    <input id="a2" placeholder="gg mese aaaa">
+    <button onclick="check(2,['30 LUGLIO 2026','30/07/2026','30-07-2026','30 LUGLIO 2026'])">CONFERMA</button><div id="m2"></div>
+  </section>
+
+  <section class="card hidden" id="s3">
+    <h2>Fascicolo 03 — Ambra & Fabio</h2>
+    <p>Ambra e Fabio hanno lasciato quattro testimonianze. Solo una contiene l'indizio vero.</p>
+    <div class="grid">
+      <div class="clue"><b>AMBRA</b><br>“Il luogo è vicino, ma non è qui.”</div>
+      <div class="clue"><b>FABIO</b><br>“Il nome sembra un cognome, ma non lo è.”</div>
+      <div class="clue"><b>AMBRA</b><br>“Ha un castello nel nome.”</div>
+      <div class="clue"><b>FABIO</b><br>“Cercate un luogo che Isabel vorrebbe visitare con i suoi zii.”</div>
+    </div>
+    <p>Le iniziali delle quattro testimonianze formano <b>A F A F</b>. Isabel scrive sotto: <em>“Prendete solo chi ha parlato due volte, poi scegliete la testimonianza che descrive il luogo senza dire il luogo.”</em></p>
+    <p>Quale frase dovete seguire? Scrivete il <b>numero</b> della testimonianza (1–4).</p>
+    <input id="a3" placeholder="Numero">
+    <button onclick="check(3,['3'])">CONFERMA</button><div id="m3"></div>
+  </section>
+
+  <section class="card hidden" id="s4">
+    <h2>Fascicolo 04 — Coordinate della memoria</h2>
+    <p>La testimonianza corretta vi ha portato a una nuova frase: <b>“Ha un castello nel nome.”</b></p>
+    <p>Il dossier geografico contiene:</p>
+    <div class="lock">C A S T E L P E T R O S O
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+
+INDIZIO:
+4-1-19-20-5-12 / 16-5-20-18-15-19-15-19-15</div>
+    <p>Usate i numeri come posizioni nella parola <b>CASTELPETROSO</b>. Quale luogo compare?</p>
+    <input id="a4" placeholder="Nome del luogo">
+    <button onclick="check(4,['CASTELPETROSO'])">CONFERMA</button><div id="m4"></div>
+  </section>
+
+  <section class="card hidden" id="s5">
+    <h2>Fascicolo 05 — Il rapporto degli zii</h2>
+    <p>Il dossier finale prima della rivelazione è firmato da Isabel. Manca una parola in ogni riga.</p>
+    <div class="clue">
+      <p>“Quando ho bisogno di voi, so che ci siete.”</p>
+      <p>“Quando combino un guaio, voi ____.”</p>
+      <p>“Quando rido, voi ridete ____ me.”</p>
+      <p>“Quando cresco, vorrei avervi sempre ____.”</p>
+    </div>
+    <p>Le parole mancanti sono: <b>CAPITE · CON · ACCANTO</b>. Una frase resta incompleta: “voi ____”. Quale parola manca, se il messaggio deve descrivere due persone che proteggono, ascoltano e accompagnano?</p>
+    <input id="a5" placeholder="Una parola">
+    <button onclick="check(5,['CI SIETE','CI SIETE!','CI SIETE'])">CONFERMA</button><div id="m5"></div>
+  </section>
+
+  <section class="card hidden" id="s6">
+    <h2>Fascicolo 06 — L'ultimo sigillo</h2>
+    <p>Avete raccolto:</p>
+    <div class="lock">CRECKS
+30 LUGLIO 2026
+TESTIMONIANZA 3
+CASTELPETROSO
+CI SIETE</div>
+    <p>Isabel vi lascia l'ultimo messaggio:</p>
+    <div class="clue"><b>“Non cercate più una risposta. Cercate il significato di tutte le risposte insieme.”</b><br><br>
+    Un soprannome. Una nascita. Un luogo. Due zii sempre presenti.<br>
+    <em>Quale impegno potrebbe unire tutto questo per tutta la vita?</em></div>
+    <input id="a6" placeholder="La vostra risposta">
+    <button onclick="check(6,['PADRINI','ESSERE I PADRINI','FARE DA PADRINI','DIVENTARE PADRINI'])">SCIOGLIERE IL SIGILLO</button><div id="m6"></div>
+  </section>
+
+  <section id="final" class="card hidden final">
+    <div class="stamp">FASCICOLO DECLASSIFICATO</div>
+    <h2 style="text-align:center">IL CASO CRECKS — RISOLTO</h2>
+    <p>Agenti <b>Zia Giada</b> e <b>Zio Pietro</b>, siete stati bravissimi. Avete seguito ogni traccia, superato ogni enigma e raggiunto <b>Castelpetroso</b>.</p>
+    <p>Ora finalmente posso dirvi il motivo di questo gioco.</p>
+    <p>È un impegno molto importante, che ci accompagnerà per tutta la vita:</p>
+    <div class="bigq">ZII, VOLETE ESSERE I MIEI PADRINI?</div>
+    <p style="text-align:center">Con amore,<br><b>Isabel</b> ♥</p>
+    <p class="note" style="text-align:center">30 luglio 2026 — una data da ricordare per sempre.</p>
+  </section>
+</div>
+</div>
+<script>
+let solved=0;
+function start(){document.getElementById('intro').classList.add('hidden');document.getElementById('game').classList.remove('hidden');update()}
+const answers={
+1:['CRECKS'],2:['30 LUGLIO 2026','30/07/2026','30-07-2026'],3:['3'],4:['CASTELPETROSO'],5:['CI SIETE','CI SIETE!'],6:['PADRINI','ESSERE I PADRINI','FARE DA PADRINI','DIVENTARE PADRINI']
+};
+function norm(s){return s.trim().toUpperCase().replace(/[’']/g,"'").replace(/\s+/g,' ')}
+function check(n,arr){
+ const v=norm(document.getElementById('a'+n).value); const ok=arr.some(x=>norm(x)===v);
+ const m=document.getElementById('m'+n);
+ if(ok){
+   m.className='success card';m.innerHTML='<b>TRACCIA CONFERMATA.</b> Isabel sorride da qualche parte...';
+   document.getElementById('s'+n).querySelector('button').disabled=true;
+   solved=Math.max(solved,n); const next=document.getElementById('s'+(n+1)); if(next) next.classList.remove('hidden');
+   if(n===6) document.getElementById('final').classList.remove('hidden');
+   update(); if(next) next.scrollIntoView({behavior:'smooth',block:'start'});
+ } else {m.className='error card';m.innerHTML='<b>CODICE ERRATO.</b> Rileggete la traccia: Isabel è discola, ma non vi sta mentendo.'}
+}
+function update(){document.getElementById('counter').textContent=solved+' / 6';document.getElementById('bar').style.width=(solved/6*100)+'%'}
+</script>
+</body>
+</html>
